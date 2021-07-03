@@ -1,0 +1,17 @@
+{
+  "name": "general",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "ts-node-dev --respawn -- src/random.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Reza Mirjahanian",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5"
+  }
+}
