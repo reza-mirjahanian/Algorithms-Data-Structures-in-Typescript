@@ -5,10 +5,12 @@ function HTMLElements(str: string) {
   let openingTags = str.match(/<\w+>/g) || [];
   let closingTags = str.match(/(<\/\w+>)/g) || [];
   if (closingTags) {
-   closingTags.reverse();
+    closingTags.reverse();
   }
-    interface StringMap { [key: string]: string; }
-  let strObj : StringMap= {
+  interface StringMap {
+    [key: string]: string;
+  }
+  let strObj: StringMap = {
     '<div>': '</div>',
     '<p>': '</p>',
     '<i>': '</i>',
@@ -20,8 +22,8 @@ function HTMLElements(str: string) {
   const max = Math.max(openingTags.length, closingTags.length);
 
   for (let i = 0; i < max; i++) {
-      let openingTag : string = openingTags[i];
-      if (strObj[openingTag]  !== closingTags[i]) {
+    let openingTag: string = openingTags[i];
+    if (strObj[openingTag] !== closingTags[i]) {
       return (openingTag || closingTags[i]).replace(/[<>]/g, '');
     }
   }
