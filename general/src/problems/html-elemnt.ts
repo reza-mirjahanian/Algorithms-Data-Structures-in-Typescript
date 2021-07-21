@@ -1,3 +1,7 @@
+import {
+  match
+} from "assert";
+
 console.log("###-- HTMLElements --###");
 
 //
@@ -76,7 +80,6 @@ function HTMLElements2(str: string) {
     return acc;
   }
   results.reduce(reducerFnc, tag);
-  // console.log(tag)
   if (!tag || tag.length === 0) {
     return true
   } else {
@@ -86,16 +89,48 @@ function HTMLElements2(str: string) {
 
 }
 
+//wrong for test("<p><div><b></b>"); // "p" (not closed at all)
+function HTMLElements3(str: string) {
+  const open_tags = ['<b>', '<i>', '<em>', '<div>', '<p>']
+  const close_tags = ['</b>', '</i>', '</em>', '</div>', '</p>']
+
+  const stack: string[] = []
+
+
+  const tags = str.match(/<[^>]*>/g) || [];
+  for (let tag of tags) {
+    if (open_tags.includes(tag)) {
+      stack.push(tag)
+    } else if (close_tags.includes(tag)) {
+      const check = close_tags.indexOf(tag)
+      if (stack.length > 0 && open_tags[check] == stack[stack.length - 1]) {
+        stack.pop()
+
+      }
+    }
+
+  }
+
+  if (stack.length > 0) {
+    return stack[stack.length-1].replace('<', '').replace('>', '')
+  }
+
+  return true
+
+
+}
+
 function test(str: string) {
-  const res = HTMLElements2(str);
+  const res = HTMLElements3(str);
   console.log(str, '\t--> ', res);
 }
 
-test("<div><div><b><b/></div></p>"); // "div" (closing a `div` with a `p`)
-test("<p><div><b><b/></div></p>"); // "b" (because `<b/>` is invalid)
+test("<div>abc</div><p><em><i>test test test</b></em></p>"); //i
+test("<div><div><b></b></div></p>"); // "div" (closing a `div` with a `p`)
+test("<div><i>hello</i>world</b>"); // div
 test("<p><div></p></div>"); // "p" (wrong order)
+test("<p><div><b></b></div></p>"); // true
+
 test("<p><div><b></b>"); // "p" (not closed at all)
 test("<p><div></b></div></p>"); // "/b" (not opened)
-test("<p><div><b></b></div></p>"); // true
-test("<div><div><b></b></div></p>"); // p
-test("<div>abc</div><p><em><i>test test test</b></em></p>"); //i
+// test("<p><div><b><b/></div></p>"); // "b" (because `<b/>` is invalid)
