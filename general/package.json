@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "ts-node-dev --respawn -- src/problems/max-pair.ts",
+    "watch": "ts-node-dev --respawn -- src/problems/sub-set-sum.ts.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Reza Mirjahanian",
