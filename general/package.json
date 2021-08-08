@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "ts-node-dev --respawn -- src/problems/hourglass-sum-2d/hour-glass-sum-2d.ts",
+    "watch": "ts-node-dev --respawn -- src/problems/array-left-rotation.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Reza Mirjahanian",
