@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "ts-node-dev --respawn -- src/problems/Inserting-Node-Into-Sorted-Doubly-Linked-List.ts",
+    "watch": "ts-node-dev --respawn -- src/problems/Reverse-a-doubly-linked-list.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Reza Mirjahanian",
