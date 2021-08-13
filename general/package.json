@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "ts-node-dev --respawn -- src/problems/hash-table/sherlockAndAnagrams.ts",
+    "watch": "ts-node-dev --respawn -- src/problems/hash-table/sherlockAndAnagrams-2.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Reza Mirjahanian",
