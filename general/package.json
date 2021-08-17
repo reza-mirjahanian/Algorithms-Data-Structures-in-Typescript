@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "ts-node-dev --respawn -- src/Graph/intro.ts",
+    "watch": "ts-node-dev --respawn -- src/Graph/BFS.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Reza Mirjahanian",
