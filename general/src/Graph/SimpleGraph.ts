@@ -9,6 +9,7 @@
 // 2. Adjacency List
 
 // Adjacency matrix for undirected graph is always symmetric.
+// There are pros and cons to each representation . Generally speaking, graphs with lots of edges fare better as matrices and graphs with fewer edges fare better as lists. Adjacency lists tend to be more common, and its what we’ll use today.
 
 // undirected graph
 function addEdge(adj: number[][], u: number, v: number) {
