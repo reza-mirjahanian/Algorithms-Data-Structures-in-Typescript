@@ -1,3 +1,4 @@
+// recStack stands for ‘recursion stack’, and it’s what’s keeping track of the back edges, the vertices we visited to get us to our current vertex.
 class DetectCycle {
   private adj: number[][];
   constructor(private V: number) {
