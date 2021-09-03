@@ -1,14 +1,13 @@
 const assert = require('assert');
 
-type opType = {
-  index: number,
-  operator: string,
-  precedence: number
-};
 
 class InfixToPrefix {
 
-  static normalize(str: string) {
+  splitByWhiteSpace(str: string) {
+    return str.match(/[\S]+/g) || [];
+  }
+
+  normalize(str: string) {
     let normalizedStr = '';
     for (let i = 0; i < str.length; i++) {
       let char = str[i];
@@ -26,86 +25,84 @@ class InfixToPrefix {
         normalizedStr += char;
       }
     }
-    return normalizedStr.replace(/([\d|\)]\s*)-/g, "$1 - "); //1-1 1 - 1
+    return normalizedStr.replace(/([\d|)]\s*)-/g, "$1 - "); //1-1 1 - 1
 
 
   }
 
-  static operators: Record < string, number > = {
-    '+': 1,
-    '-': 1,
-    '*': 2,
-    '/': 2
-  };
+  mainStack: string[] = [];
+  stackPointer = -1;
 
-
-  static isOperator(value: string) {
-    return InfixToPrefix.operators[value];
+  push(c: string) {
+    this.stackPointer++;
+    this.mainStack[this.stackPointer] = c;
   }
 
-  static reverseByPrecedence(operatorLocations: opType[]) {
-    return operatorLocations.reverse().sort(function(a, b) {
-      return a.precedence - b.precedence;
-    });
+  pop() {
+    if (this.stackPointer === -1)
+      return '';
+    else {
+      let popped_ele = this.mainStack[this.stackPointer];
+      this.stackPointer--;
+      return popped_ele;
+    }
   }
 
-  static convert(expression: string) {
-    // split on whitespace
-    expression = InfixToPrefix.normalize(expression);
-    const expressionArray = expression.match(/[\S]+/g) || [];
-    const tokens = expressionArray.map((value) => {
-      return {
-        value: value,
-        outputted: false
-      };
-    });
+  isOperator(c: string) {
+    return (c === '+' || c === '-' || c === '^' || c === '*' || c === '/' || c === '(' || c === ')');
+  }
 
-    let operatorLocations = [];
-    let i;
+  getOrders(c: string) {
+    if (c === '!' || c === '(' || c === ')') {
+      return 1;
+    } else if (c === '+' || c === '-') {
+      return 2;
+    } else if (c === '/' || c === '*') {
+      return 3;
+    } else if (c === '^') {
+      return 4;
+    } else
+      return 0;
+  }
+  convert(expression: string) : string[] {
+    let prefix : string[] = [];
+    let temp = 0;
+    this.push('!');
+    expression = this.normalize(expression);
+    let expressionArray = this.splitByWhiteSpace(expression);
 
-    for (i = 0; i < tokens.length; i++) {
-      if (InfixToPrefix.isOperator(tokens[i].value)) {
-        operatorLocations.push({
-          index: i,
-          operator: tokens[i].value,
-          precedence: InfixToPrefix.operators[tokens[i].value]
-        });
+    for (let i = expressionArray.length - 1; i >= 0; i--) {
+      let el = expressionArray[i];
+      if (this.isOperator(el)) {
+        if (el === '(') {
+          while (this.mainStack[this.stackPointer] !== ")") {
+            prefix[temp++] = this.pop();
+          }
+          this.pop();
+        } else if (el === ')') {
+          this.push(el);
+        }
+
+
+        else if (this.getOrders(el) > this.getOrders(this.mainStack[this.stackPointer])) {
+          this.push(el);
+        } else {
+          while (this.getOrders(el) <= this.getOrders(this.mainStack[this.stackPointer]) && this.stackPointer > -1) {
+            prefix[temp++] = this.pop();
+          }
+          this.push(el);
+        }
+      } else {
+        prefix[temp++] = el;
       }
     }
-    console.log({
-      expression
-    })
-
-    if (operatorLocations.length <= 0) {
-      return expression;
-    } else {
-      operatorLocations = InfixToPrefix.reverseByPrecedence(operatorLocations);
-      let output = '';
-      let outputIndex = 0;
-
-      for (i = 0; i < operatorLocations.length; i++) {
-        let opLocation = operatorLocations[i];
-
-        output += tokens[opLocation.index].value + ' ';
-        tokens[opLocation.index].outputted = true;
-
-        if (outputIndex === opLocation.index - 1) {
-          output += tokens[opLocation.index - 1].value + ' ';
-          tokens[opLocation.index - 1].outputted = true;
-          outputIndex++;
-        }
-      }
-
-      for (i = 0; i < tokens.length; i++) {
-        if (!tokens[i].outputted) {
-          output += tokens[i].value + ' ';
-        }
-      }
-      return output.trim();
+    while (this.mainStack[this.stackPointer] !== '!') {
+      prefix[temp++] = this.pop();
     }
 
-
+    return prefix.reverse();
   }
+
 }
 
 class PreFixCalc {
@@ -145,12 +142,9 @@ class PreFixCalc {
     return true;
   }
 
-  static run(expression: string): number {
+  static run(chars: string[]): number {
 
-    const chars = expression.trim().split(/\s+/);
-    console.log({
-      chars
-    })
+
     const stack: number[] = [];
     let i = chars.length - 1;
     for (i; i >= 0; i--) {
@@ -183,8 +177,9 @@ class PreFixCalc {
 }
 
 const calcRun = (expression: string): number => {
+  const toPrefix = new InfixToPrefix();
 
-  const preFixEx = InfixToPrefix.convert(expression);
+  const preFixEx = toPrefix.convert(expression);
   console.log({
     preFixEx
   })
@@ -195,12 +190,15 @@ const calcRun = (expression: string): number => {
   return result
 };
 
-// console.log(InfixToPrefix.convert('( 5 )'))
+// const testPre = new InfixToPrefix();
+// console.log(testPre.convert('( 5 )'))
+// console.log(testPre.convert('6 + (0 + -4)'))
 // console.log(InfixToPrefix.convert('(3)'))
 // console.log(InfixToPrefix.convert('6 + -( -4)'))
 
 //
-assert(calcRun('6 + 0 -( -4)') === 10);
+// assert(calcRun('6 +  -( -4)') === 10);
+assert(calcRun('( -4)') === 10);
 
 
 // assert(calcRun('(-2)') === -2);
