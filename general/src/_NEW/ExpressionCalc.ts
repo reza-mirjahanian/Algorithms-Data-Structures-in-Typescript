@@ -1,69 +1,111 @@
 const assert = require('assert');
 
+type opType = {
+  index: number,
+  operator: string,
+  precedence: number
+};
 
 class InfixToPrefix {
-  private static _look(array: string[]): string {
-    return (array[array.length - 1]);
-  }
 
-  private static _priority(char: string) {
-    if (char === '+' || char === '-') {
-      return 1;
-    }
-    if (char === '*' || char === '/') {
-      return 2;
-    }
-    if (char === '(' || char === ')') {
-      return 3;
-    }
-    return -1;
-  }
-
-  private static isFull(a: string[]) {
-    return a.length >= 1;
-  }
-
-  static convert(infix: string) {
-    infix = infix.replace(/\)/g, '@');
-    infix = infix.replace(/\(/g, ')');
-    infix = infix.replace(/@/g, '(');
-    const splitArray = infix.match(/[\S]+/g) || [];
-    const reversedArray = splitArray.reverse();
-    let s = [];
-    console.log(reversedArray)
-    let output = [];
-    for (let ch of reversedArray) {
-      if (ch !== ')' && ch !== '(' && ch !== '+' && ch !== '-' && ch !== '*' && ch !== '/') {
-        output.push(ch)
-
-      } else if (ch == ')') {
-        while (InfixToPrefix._look(s) != '(') {
-
-          output.push(s.pop());
-        }
-        s.pop();
+  static normalize(str: string) {
+    let normalizedStr = '';
+    for (let i = 0; i < str.length; i++) {
+      let char = str[i];
+      if (char === '(') {
+        normalizedStr += ' ( '
+      } else if (char === ')') {
+        normalizedStr += ' ) '
+      } else if (char === '*') {
+        normalizedStr += ' * '
+      } else if (char === '/') {
+        normalizedStr += ' / '
+      } else if (char === '+') {
+        normalizedStr += ' + '
       } else {
-        while (InfixToPrefix.isFull(s)) {
-          if (InfixToPrefix._look(s) === '(') {
-            break;
-          }
-          if (InfixToPrefix._priority(InfixToPrefix._look(s)) < InfixToPrefix._priority(ch)) {
-            break;
-          }
-
-          output.push(s.pop())
-        }
-
-        s.push(ch);
+        normalizedStr += char;
       }
-    } // Endfor
-
-    while (InfixToPrefix.isFull(s)) {
-      output.push(s.pop())
     }
-    return output.reverse().join(' ')
+    return normalizedStr.replace(/([\d|\)]\s*)-/g, "$1 - "); //1-1 1 - 1
+
+
   }
 
+  static operators: Record < string, number > = {
+    '+': 1,
+    '-': 1,
+    '*': 2,
+    '/': 2
+  };
+
+
+  static isOperator(value: string) {
+    return InfixToPrefix.operators[value];
+  }
+
+  static reverseByPrecedence(operatorLocations: opType[]) {
+    return operatorLocations.reverse().sort(function(a, b) {
+      return a.precedence - b.precedence;
+    });
+  }
+
+  static convert(expression: string) {
+    // split on whitespace
+    expression = InfixToPrefix.normalize(expression);
+    const expressionArray = expression.match(/[\S]+/g) || [];
+    const tokens = expressionArray.map((value) => {
+      return {
+        value: value,
+        outputted: false
+      };
+    });
+
+    let operatorLocations = [];
+    let i;
+
+    for (i = 0; i < tokens.length; i++) {
+      if (InfixToPrefix.isOperator(tokens[i].value)) {
+        operatorLocations.push({
+          index: i,
+          operator: tokens[i].value,
+          precedence: InfixToPrefix.operators[tokens[i].value]
+        });
+      }
+    }
+    console.log({
+      expression
+    })
+
+    if (operatorLocations.length <= 0) {
+      return expression;
+    } else {
+      operatorLocations = InfixToPrefix.reverseByPrecedence(operatorLocations);
+      let output = '';
+      let outputIndex = 0;
+
+      for (i = 0; i < operatorLocations.length; i++) {
+        let opLocation = operatorLocations[i];
+
+        output += tokens[opLocation.index].value + ' ';
+        tokens[opLocation.index].outputted = true;
+
+        if (outputIndex === opLocation.index - 1) {
+          output += tokens[opLocation.index - 1].value + ' ';
+          tokens[opLocation.index - 1].outputted = true;
+          outputIndex++;
+        }
+      }
+
+      for (i = 0; i < tokens.length; i++) {
+        if (!tokens[i].outputted) {
+          output += tokens[i].value + ' ';
+        }
+      }
+      return output.trim();
+    }
+
+
+  }
 }
 
 class PreFixCalc {
@@ -106,6 +148,9 @@ class PreFixCalc {
   static run(expression: string): number {
 
     const chars = expression.trim().split(/\s+/);
+    console.log({
+      chars
+    })
     const stack: number[] = [];
     let i = chars.length - 1;
     for (i; i >= 0; i--) {
@@ -120,7 +165,6 @@ class PreFixCalc {
         if (num1 !== undefined && num2 !== undefined) {
           result = PreFixCalc.calc(char, num1, num2);
         }
-
 
         if (result !== null) {
           stack.push(result)
@@ -151,8 +195,35 @@ const calcRun = (expression: string): number => {
   return result
 };
 
+// console.log(InfixToPrefix.convert('( 5 )'))
+// console.log(InfixToPrefix.convert('(3)'))
+// console.log(InfixToPrefix.convert('6 + -( -4)'))
 
-assert(calcRun('1-1') === 0);
+//
+assert(calcRun('6 + 0 -( -4)') === 10);
+
+
+// assert(calcRun('(-2)') === -2);
+// assert(calcRun('6 + (0 + -4)') === 2);
+// assert(calcRun('6 + ( -4)') === 2);
+// assert(calcRun('-2') === -2);
+// assert(calcRun('3 - -2') === 5);
+// assert(calcRun('4 -   -3') === 7);
+// assert(calcRun('4 -3 ') === 1);
+// assert(calcRun('(4) -3  ') === 1);
+// assert(calcRun('(4)-3  ') === 1);
+// assert(calcRun('4- -3') === 7);
+// assert(calcRun('7-3 ') === 4);
+// assert(calcRun('6- 1 ') === 5);
+// assert(calcRun('5 - 1') === 4);
+// assert(calcRun('1- -1') === 2);
+// assert(calcRun('1 - -1') === 2);
+// assert(calcRun('6 +  (4) ') === 10);
+// assert(calcRun('6*(4)') === 24);
+// assert(calcRun('8/(4)') === 2);
 // assert(calcRun('( 2 + 3.33 )    ') === 5.33);
 // assert(calcRun('( 1 ) * 4   ') === 4);
 // assert(calcRun('( 1 ) * -4   ') === -4);
+// assert(calcRun('6-1') === 5);
+
+console.log('END')
