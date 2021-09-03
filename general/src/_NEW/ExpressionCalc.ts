@@ -9,7 +9,9 @@ class InfixToPrefix {
 
   normalize(str: string) {
     let normalizedStr = '';
+
     for (let i = 0; i < str.length; i++) {
+
       let char = str[i];
       if (char === '(') {
         normalizedStr += ' ( '
@@ -21,11 +23,15 @@ class InfixToPrefix {
         normalizedStr += ' / '
       } else if (char === '+') {
         normalizedStr += ' + '
+      } else if (char === '-' && str[i + 1] === '(') {
+        normalizedStr += ' # ( ';
+        i++;
       } else {
         normalizedStr += char;
       }
     }
-    return normalizedStr.replace(/([\d|)]\s*)-/g, "$1 - "); //1-1 1 - 1
+    normalizedStr = normalizedStr.replace(/([\d|)]\s*)-/g, "$1 - "); //1-1 1 - 1
+    return normalizedStr;
 
 
   }
@@ -49,7 +55,7 @@ class InfixToPrefix {
   }
 
   isOperator(c: string) {
-    return (c === '+' || c === '-' || c === '^' || c === '*' || c === '/' || c === '(' || c === ')');
+    return (c === '+' || c === '-' || c === '#' || c === '*' || c === '/' || c === '(' || c === ')');
   }
 
   getOrders(c: string) {
@@ -59,13 +65,13 @@ class InfixToPrefix {
       return 2;
     } else if (c === '/' || c === '*') {
       return 3;
-    } else if (c === '^') {
+    } else if (c === '#') {
       return 4;
     } else
       return 0;
   }
-  convert(expression: string) : string[] {
-    let prefix : string[] = [];
+  convert(expression: string): string[] {
+    let prefix: string[] = [];
     let temp = 0;
     this.push('!');
     expression = this.normalize(expression);
@@ -81,10 +87,7 @@ class InfixToPrefix {
           this.pop();
         } else if (el === ')') {
           this.push(el);
-        }
-
-
-        else if (this.getOrders(el) > this.getOrders(this.mainStack[this.stackPointer])) {
+        } else if (this.getOrders(el) > this.getOrders(this.mainStack[this.stackPointer])) {
           this.push(el);
         } else {
           while (this.getOrders(el) <= this.getOrders(this.mainStack[this.stackPointer]) && this.stackPointer > -1) {
@@ -163,6 +166,12 @@ class PreFixCalc {
         if (result !== null) {
           stack.push(result)
         }
+      } else if (char === '#' && stack.length > 0) {
+        const num1 = stack.pop();
+        if (num1 !== undefined) {
+          stack.push(-1 * num1)
+        }
+
       }
     }
 
@@ -180,13 +189,9 @@ const calcRun = (expression: string): number => {
   const toPrefix = new InfixToPrefix();
 
   const preFixEx = toPrefix.convert(expression);
-  console.log({
-    preFixEx
-  })
+
   const result = PreFixCalc.run(preFixEx);
-  console.log({
-    result
-  })
+
   return result
 };
 
@@ -197,14 +202,13 @@ const calcRun = (expression: string): number => {
 // console.log(InfixToPrefix.convert('6 + -( -4)'))
 
 //
-// assert(calcRun('6 +  -( -4)') === 10);
-assert(calcRun('( -4)') === 10);
-
-
-// assert(calcRun('(-2)') === -2);
-// assert(calcRun('6 + (0 + -4)') === 2);
-// assert(calcRun('6 + ( -4)') === 2);
-// assert(calcRun('-2') === -2);
+assert(calcRun('6 +  -( -4)') === 10);
+assert(calcRun('-(-3) +  -( -4)') === 7);
+assert(calcRun('-(1)') === -1);
+assert(calcRun('(-2)') === -2);
+assert(calcRun('6 + (0 + -4)') === 2);
+assert(calcRun('6 + ( -4)') === 2);
+assert(calcRun('-2') === -2);
 // assert(calcRun('3 - -2') === 5);
 // assert(calcRun('4 -   -3') === 7);
 // assert(calcRun('4 -3 ') === 1);
