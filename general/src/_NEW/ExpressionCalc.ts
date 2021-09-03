@@ -2,66 +2,108 @@ const assert = require('assert');
 
 
 class InfixToPrefix {
-  private static _look(array: string[]): string {
-    return (array[array.length - 1]);
+
+  splitByWhiteSpace(str: string) {
+    return str.match(/[\S]+/g) || [];
   }
 
-  private static _priority(char: string) {
-    if (char === '+' || char === '-') {
-      return 1;
-    }
-    if (char === '*' || char === '/') {
-      return 2;
-    }
-    if (char === '(' || char === ')') {
-      return 3;
-    }
-    return -1;
-  }
+  normalize(str: string) {
+    let normalizedStr = '';
 
-  private static isFull(a: string[]) {
-    return a.length >= 1;
-  }
+    for (let i = 0; i < str.length; i++) {
 
-  static convert(infix: string) {
-    infix = infix.replace(/\)/g, '@');
-    infix = infix.replace(/\(/g, ')');
-    infix = infix.replace(/@/g, '(');
-    const splitArray = infix.match(/[\S]+/g) || [];
-    const reversedArray = splitArray.reverse();
-    let s = [];
-    console.log(reversedArray)
-    let output = [];
-    for (let ch of reversedArray) {
-      if (ch !== ')' && ch !== '(' && ch !== '+' && ch !== '-' && ch !== '*' && ch !== '/') {
-        output.push(ch)
-
-      } else if (ch == ')') {
-        while (InfixToPrefix._look(s) != '(') {
-
-          output.push(s.pop());
-        }
-        s.pop();
+      let char = str[i];
+      if (char === '(') {
+        normalizedStr += ' ( '
+      } else if (char === ')') {
+        normalizedStr += ' ) '
+      } else if (char === '*') {
+        normalizedStr += ' * '
+      } else if (char === '/') {
+        normalizedStr += ' / '
+      } else if (char === '+') {
+        normalizedStr += ' + '
+      } else if (char === '-' && str[i + 1] === '(') {
+        normalizedStr += ' # ( ';
+        i++;
       } else {
-        while (InfixToPrefix.isFull(s)) {
-          if (InfixToPrefix._look(s) === '(') {
-            break;
-          }
-          if (InfixToPrefix._priority(InfixToPrefix._look(s)) < InfixToPrefix._priority(ch)) {
-            break;
-          }
-
-          output.push(s.pop())
-        }
-
-        s.push(ch);
+        normalizedStr += char;
       }
-    } // Endfor
-
-    while (InfixToPrefix.isFull(s)) {
-      output.push(s.pop())
     }
-    return output.reverse().join(' ')
+    normalizedStr = normalizedStr.replace(/([\d|)]\s*)-/g, "$1 - "); //1-1 1 - 1
+    return normalizedStr;
+
+
+  }
+
+  mainStack: string[] = [];
+  stackPointer = -1;
+
+  push(c: string) {
+    this.stackPointer++;
+    this.mainStack[this.stackPointer] = c;
+  }
+
+  pop() {
+    if (this.stackPointer === -1)
+      return '';
+    else {
+      let popped_ele = this.mainStack[this.stackPointer];
+      this.stackPointer--;
+      return popped_ele;
+    }
+  }
+
+  isOperator(c: string) {
+    return (c === '+' || c === '-' || c === '#' || c === '*' || c === '/' || c === '(' || c === ')');
+  }
+
+  getOrders(c: string) {
+    if (c === '!' || c === '(' || c === ')') {
+      return 1;
+    } else if (c === '+' || c === '-') {
+      return 2;
+    } else if (c === '/' || c === '*') {
+      return 3;
+    } else if (c === '#') {
+      return 4;
+    } else
+      return 0;
+  }
+  convert(expression: string): string[] {
+    let prefix: string[] = [];
+    let temp = 0;
+    this.push('!');
+    expression = this.normalize(expression);
+    let expressionArray = this.splitByWhiteSpace(expression);
+
+    for (let i = expressionArray.length - 1; i >= 0; i--) {
+      let el = expressionArray[i];
+      if (this.isOperator(el)) {
+        if (el === '(') {
+          while (this.mainStack[this.stackPointer] !== ")") {
+            prefix[temp++] = this.pop();
+          }
+          this.pop();
+        } else if (el === ')') {
+          this.push(el);
+        } else if (this.getOrders(el) > this.getOrders(this.mainStack[this.stackPointer])) {
+          this.push(el);
+        } else {
+          while (this.getOrders(el) <= this.getOrders(this.mainStack[this.stackPointer]) && this.stackPointer > -1) {
+            prefix[temp++] = this.pop();
+          }
+          this.push(el);
+        }
+      } else {
+        prefix[temp++] = el;
+      }
+    }
+    while (this.mainStack[this.stackPointer] !== '!') {
+      prefix[temp++] = this.pop();
+    }
+
+    return prefix.reverse();
   }
 
 }
@@ -103,9 +145,9 @@ class PreFixCalc {
     return true;
   }
 
-  static run(expression: string): number {
+  static run(chars: string[]): number {
 
-    const chars = expression.trim().split(/\s+/);
+
     const stack: number[] = [];
     let i = chars.length - 1;
     for (i; i >= 0; i--) {
@@ -121,10 +163,15 @@ class PreFixCalc {
           result = PreFixCalc.calc(char, num1, num2);
         }
 
-
         if (result !== null) {
           stack.push(result)
         }
+      } else if (char === '#' && stack.length > 0) {
+        const num1 = stack.pop();
+        if (num1 !== undefined) {
+          stack.push(-1 * num1)
+        }
+
       }
     }
 
@@ -139,20 +186,46 @@ class PreFixCalc {
 }
 
 const calcRun = (expression: string): number => {
+  const toPrefix = new InfixToPrefix();
 
-  const preFixEx = InfixToPrefix.convert(expression);
-  console.log({
-    preFixEx
-  })
+  const preFixEx = toPrefix.convert(expression);
+
   const result = PreFixCalc.run(preFixEx);
-  console.log({
-    result
-  })
+
   return result
 };
 
+// const testPre = new InfixToPrefix();
+// console.log(testPre.convert('( 5 )'))
+// console.log(testPre.convert('6 + (0 + -4)'))
+// console.log(InfixToPrefix.convert('(3)'))
+// console.log(InfixToPrefix.convert('6 + -( -4)'))
 
-assert(calcRun('1-1') === 0);
+//
+assert(calcRun('6 +  -( -4)') === 10);
+assert(calcRun('-(-3) +  -( -4)') === 7);
+assert(calcRun('-(1)') === -1);
+assert(calcRun('(-2)') === -2);
+assert(calcRun('6 + (0 + -4)') === 2);
+assert(calcRun('6 + ( -4)') === 2);
+assert(calcRun('-2') === -2);
+// assert(calcRun('3 - -2') === 5);
+// assert(calcRun('4 -   -3') === 7);
+// assert(calcRun('4 -3 ') === 1);
+// assert(calcRun('(4) -3  ') === 1);
+// assert(calcRun('(4)-3  ') === 1);
+// assert(calcRun('4- -3') === 7);
+// assert(calcRun('7-3 ') === 4);
+// assert(calcRun('6- 1 ') === 5);
+// assert(calcRun('5 - 1') === 4);
+// assert(calcRun('1- -1') === 2);
+// assert(calcRun('1 - -1') === 2);
+// assert(calcRun('6 +  (4) ') === 10);
+// assert(calcRun('6*(4)') === 24);
+// assert(calcRun('8/(4)') === 2);
 // assert(calcRun('( 2 + 3.33 )    ') === 5.33);
 // assert(calcRun('( 1 ) * 4   ') === 4);
 // assert(calcRun('( 1 ) * -4   ') === -4);
+// assert(calcRun('6-1') === 5);
+
+console.log('END')
