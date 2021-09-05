@@ -1,20 +1,24 @@
 function whatFlavors(cost: number[], money: number): void {
-    // Write your code here
     const costHash: Record<number,number> = {};
     for(let i = 0; i < cost.length; i++) {
         costHash[cost[i]] = i+1;
     }
 
-    for(let i = 0; i < cost.length; i++) {
-        let diff = money - cost[i];
-        if (i+1 == costHash[diff]) continue;
-        if (costHash[diff]) {
-            const res = costHash[diff] > i+1 ? `${i+1} ${costHash[diff]}` : `${costHash[diff]} ${i+1}`;
+    // j + 1 (for 1 zero index)
+// costTable for duplicate price, keep latest.
+    for(let j = 0; j < cost.length; j++) {
+        let subtract = money - cost[j];
+        if (j+1 == costHash[subtract]) {
+            continue;
+        }
+        if (costHash[subtract]) {
+            const res = costHash[subtract] > j+1 ? `${j+1} ${costHash[subtract]}` : `${costHash[subtract]} ${j+1}`;
             console.log(res);
-
+           return  ;
         }
     }
 }
 
-// whatFlavors([4,3,2,5,7], 8)
+// whatFlavors( [1 ,4 ,5, 3 ,2], 4)
 whatFlavors( [2, 2, 4, 3], 4)
+// whatFlavors( [2, 2, 2, 2], 4)
