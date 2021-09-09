@@ -1,112 +1,103 @@
+// package com.company;
 //
-// let numToDigitToArray = new Map();
+// import java.util.Arrays;
 //
-// let digitToArray = new Map();
-// digitToArray.set(1, [0])
-// numToDigitToArray.set(0, digitToArray);
+// /******************************************************************************
 //
-// digitToArray = new Map();
-// digitToArray.set(1, [1])
-// numToDigitToArray.set(1, digitToArray);
+//  Online Java Compiler.
+//  Code, Compile, Run and Debug java program online.
+//  Write your code in this editor and press "Run" button to execute it.
+//  *******************************************************************************/
 //
-// let countArray = [1, 1];
-// let sumCountArray = [1, 2];
-// let maxNumberOfDigit = [9];
-// function addToHashTable(mapOfMap, number, digit, array) {
-//   let digitToArr;
 //
-//   if (mapOfMap.has(number))
-//     digitToArr = mapOfMap.get(number);
-//   else {
-//     digitToArr = new Map();
-//     mapOfMap.set(number, digitToArr);
-//   }
+// public class Main {
 //
-//   digitToArr.set(digit, array);
-//   if (digitToArr.count === undefined)
-//     digitToArr.count = array.length;
-//   else
-//     digitToArr.count += array.length;
+//     static final int MAX_D = 19;
+//     static final int MAX_S = 300000;
+//
+//     static long[][] f;
+//     static long[] c;
+//
+//     static int binarySearch(long x) {
+//     int found = Arrays.binarySearch(c, x);
+//     if (found < 0) {
+//     found = -1 - found;
+// }
+// return found;
 // }
 //
-// function minDigit(num) {
-//   while (maxNumberOfDigit[maxNumberOfDigit.length - 1] < num) {
-//     let nextDigit = maxNumberOfDigit.length;
-//     let max = maxNumberOfDigit[maxNumberOfDigit.length - 1] + 9 * Math.pow(2, nextDigit);
-//     maxNumberOfDigit.push(max);
-//   }
-//   return maxNumberOfDigit.length;
+// static void computeF() {
+//     f = new long[MAX_D + 1][MAX_S + 1];
+//     for (int d = 0; d <= MAX_D; d++) {
+//         for (int s = 0; s <= MAX_S; s++) {
+//             if (d == 0) {
+//                 if (s == 0) {
+//                     f[d][s] = 1;
+//                 } else {
+//                     f[d][s] = 0;
+//                 }
+//             } else {
+//                 f[d][s] = 0;
+//                 for (int i = 0; i <= 9; i++) {
+//                     long nextS = s - i * (1L << (d - 1));
+//                     if (nextS >= 0) {
+//                         f[d][s] += f[d - 1][(int) nextS];
+//                     }
+//                 }
+//             }
+//         }
+//     }
 // }
 //
-// function countingArrays(number) {
-//   let minDig = minDigit(number), maxDigit = Math.ceil(Math.log2(number));
-//   for (let digit = minDig; digit <= maxDigit; digit++) {
-//     let formats = formatsOfNumber(number, digit);
-//     addToHashTable(numToDigitToArray, number, digit, formats);
-//   }
-//
-//   if (number === Math.pow(2, maxDigit))
-//     addToHashTable(numToDigitToArray, number, maxDigit + 1, [parseInt(Number(number).toString(2))]);
-//
-//   let index = number, count = numToDigitToArray.get(number).count;
-//   countArray[index] = count;
-//   sumCountArray[index] = count + sumCountArray[index - 1];
+// static void computeC() {
+//     c = new long[MAX_S + 1];
+//     long total = 0;
+//     for (int i = 0; i < c.length; i++) {
+//         total += f[MAX_D][i];
+//         c[i] = total;
+//     }
 // }
 //
-// function lastFormatOfNumber(digit2Arr) {
-//   let keys = Array.from(digit2Arr.keys()), lastKey = keys[keys.length - 1];
-//   let array = digit2Arr.get(lastKey);
-//   return array[array.length - 1];
-// }
+// // Complete the decibinaryNumbers function below.
+// static long decibinaryNumbers(long x) {
+//     if(f == null) {
+//         computeF();
+//         computeC();
+//     }
 //
-// function formatsOfNumber(number, digit) {
-//   if (digit < 1)
-//     throw Error(`Unexpected case: number: ${number}, digit: ${digit}.`);
-//   if (number < 10 && digit === 1)
-//     return [number];
-//   else if (number === 0 || number === 1)
-//     return [number];
-//   else if (digit < minDigit(number))
-//     return [];
 //
-//   let lessDigits = digit - 1, n = number - Math.pow(2, lessDigits), formats = [];
-//   for (let highBit = 1; highBit < 10; highBit++) {
-//     if (n < 0)
-//       break;
+//     int s = binarySearch(x);
+//     long g = x - (s == 0 ? 0 : c[s - 1]);
 //
-//     formats = formats.concat(highBit.toString() + formatsOfNumber(n, lessDigits).map(lower => String(lower).padStart(lessDigits, '0')));
-//     n -= Math.pow(2, lessDigits);
-//   }
+//     StringBuilder output = new StringBuilder();
+//     for (int d = MAX_D; d >= 1; d--) {
+//         int j = -1;
+//         long prevNumberCount = -1;
+//         long numCount = 0;
+//         while (numCount < g) {
+//             j++;
 //
-//   return formats;
+//             prevNumberCount = numCount;
+//             numCount += f[d - 1][s - j * (1 << (d - 1))];
+//         }
+//
+//         output.append(j);
+//         s -= j * (1 << (d - 1));
+//         g -= prevNumberCount;
+//     }
+//     return Long.parseLong(output.toString());
 // }
 //
 //
-// function decibinaryNumbers(x) {
+// public static void main(String[] args) {
+//     System.out.println("Hello World");
 //
-//   while (x > sumCountArray[sumCountArray.length - 1]) {
-//     countingArrays(sumCountArray.length);
-//   }
+//     long[] input = {3, 3, 9, 9, 5};
+//     int[] graphTo = {2, 3, 2};
+//     int[] ids = {1, 2, 1, 1};
 //
-//   let found = sumCountArray.findIndex(value => value === x);
-//   if (found !== -1){
-//     return lastFormatOfNumber(numToDigitToArray.get(found));
-//   }
-//   else{
-//     found = sumCountArray.findIndex((value, index) => sumCountArray[index - 1] < x && value > x);
-//   }
-//
-//
-//   let diff = x - sumCountArray[found - 1];
-//   let digitToArray = numToDigitToArray.get(found);
-//   for (let digit of digitToArray.keys()) {
-//     let formats = digitToArray.get(digit);
-//     if (diff - formats.length <= 0)
-//       return formats[diff - 1];
-//     else
-//       diff -= formats.length
-//   }
+//     long ans = Main.decibinaryNumbers(23);
+//     System.out.println(ans);
 //
 // }
-//
-// console.log(decibinaryNumbers(8))
+// }
