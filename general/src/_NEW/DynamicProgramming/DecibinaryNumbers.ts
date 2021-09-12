@@ -101,3 +101,69 @@
 //
 // }
 // }
+
+
+// const MAX_DECIMAL = 300000;
+// const MAX_DIGIT = Math.ceil(Math.log2(MAX_DECIMAL));
+// const D = new Array(MAX_DIGIT)
+//     .fill(0)
+//     .map((_) => new Array(MAX_DECIMAL).fill(-1));
+// const O = new Array(MAX_DECIMAL);
+//
+// const digits_by_decimal = (digits, decimal) => {
+//     if (digits < 0) return decimal ? 0 : 1;
+//     if (D[digits][decimal] < 0) {
+//         D[digits][decimal] = 0;
+//         for (let d = 0; d <= 9; d++) {
+//             const term = (1 << digits) * d;
+//             if (term > decimal) break;
+//             D[digits][decimal] += digits_by_decimal(digits - 1, decimal - term);
+//         }
+//     }
+//     return D[digits][decimal];
+// };
+//
+// O[0] = BigInt(1);
+// for (let i = 1; i < MAX_DECIMAL; i++)
+//     O[i] = O[i - 1] + BigInt(digits_by_decimal(MAX_DIGIT - 1, i));
+//
+// const to_decimal = (x) => {
+//     let l = 0,
+//         h = MAX_DECIMAL;
+//     while (l <= h) {
+//         const m = ((l + h) / 2) | 0;
+//         if (O[m] >= x) h = m - 1;
+//         else l = m + 1;
+//     }
+//     return l;
+// };
+
+// function decibinaryNumbers(x) {
+//     if (x <= 1) return 0;
+//     const decimal = to_decimal(x);
+//     let index = BigInt(x) - O[decimal - 1];
+//     let remainder = decimal;
+//     let digits = 0;
+//     while (digits_by_decimal(digits, decimal) < index) digits++;
+//     let result = BigInt(0);
+//     //console.log(x, { decimal, index, digits });
+//     while (digits >= 0) {
+//         let acc = BigInt(0);
+//         for (let digit = 0; digit <= 9; digit++) {
+//             const term = (1 << digits) * digit;
+//             if (remainder < term) break;
+//             const delta = BigInt(digits_by_decimal(digits - 1, remainder - term));
+//             //console.log(digits, digit, { term, remainder, delta, acc, index });
+//             if (delta + acc >= index) {
+//                 result = result * BigInt(10) + BigInt(digit);
+//                 index -= acc;
+//                 remainder -= term;
+//                 //console.log({ result, index, remainder });
+//                 break;
+//             }
+//             acc += delta;
+//         }
+//         digits--;
+//     }
+//     return result.toString();
+// }
